@@ -1,0 +1,21 @@
+<ion-header>
+  <!-- TODO translate -->
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Administration Modules</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-list no-lines>
+    <ion-list-header>
+    Modules
+  </ion-list-header>
+  <button ion-item *ngFor="let p of pages" (click)="openAdminPage(p)">
+    {{p.title | translate }}
+  </button>
+  </ion-list>
+</ion-content>

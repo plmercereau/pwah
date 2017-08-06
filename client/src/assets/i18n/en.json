@@ -1,0 +1,62 @@
+{
+  "_TODO": "faire le ménage",
+  "label": {
+    "email": "Email address",
+    "password": "Password",
+    "username": "User name",
+    "name": "Name",
+    "shortName": "Short name",
+    "code": "Code",
+    "type": "Type",
+    "description": "Description",
+    "password": "Password",
+    "confirmPassword" : "Confirm password",
+    "title" : "Title",
+    "author_name": "Author",
+    "pages": "Pages"
+  },
+  "placeholder":{
+    "name": "enter the name here"
+  },
+  "button" : {
+    "login" : "Login",
+    "register" : "Register",
+    "forgottenPassword" : "Forgotten password?",
+    "submit" : "Submit",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "move" : "Move",
+    "add" : "Add",
+    "save" : "Save"
+  },
+  "question" : {
+    "deleteOrgUnit": "Are you sure to remove the organisation unit \"{{orgUnit}}\" and his child units?"
+  },
+  "page" : {
+    "home" : "Home",
+    "login" : "Login",
+    "logout" : "Logout",
+    "admin" : {
+      "list" : "Administration",
+      "orgUnits" : "Organisation Structure",
+      "orgUnitDetails" : "Details",
+      "childOrgUnitsList" : "Child organisation units",
+      "rootOrgUnitsList" : "Root organisation units",
+      "rootOrgUnitsTitle" : "Root",
+      "newOrgUnit" : "New",
+      "deleteOrgUnit" : "Delete Organisation Unit",
+      "orgUnitTypes" : "Organisation unit types",
+      "programTypes" : "Program types"
+    },
+    "register" : "New registration",
+    "forgottenPassword" : "Password recovery",
+    "profile" : "Profile",
+    "books" : {
+      "list" : "My books",
+      "add": "Add book",
+      "edit" : "Edit book",
+      "preview": "Preview"
+    }
+  }
+}

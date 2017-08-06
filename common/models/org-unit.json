@@ -1,0 +1,30 @@
+{
+  "name": "OrgUnit",
+  "plural": "OrgUnits",
+  "base": "PersistedModel",
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "Tree": {}
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "shortName": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
