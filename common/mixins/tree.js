@@ -1,4 +1,5 @@
 'use strict';
+// TODO mixin "soft delete"
 module.exports = function(Model, options) {
   Model.belongsTo(Model, {as: 'parent', foreignKey: 'parentId'});
   Model.hasMany(Model, {as: 'children', foreignKey: 'parentId'});

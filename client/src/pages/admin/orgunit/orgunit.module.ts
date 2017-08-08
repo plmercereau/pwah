@@ -4,7 +4,7 @@ import { OrgUnitPage } from './orgunit';
 import { TranslateModule } from '@ngx-translate/core';
 import { DynamicFormsIonicUIModule } from "@ng2-dynamic-forms/ui-ionic";
 import { DynamicFormsCoreModule } from "@ng2-dynamic-forms/core";
-import {PipesModule} from "../../../pipes/pipes.module";
+import { PipesModule } from "../../../shared/pipes/pipes.module";
 
 @NgModule({
   declarations: [

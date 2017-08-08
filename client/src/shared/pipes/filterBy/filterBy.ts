@@ -1,6 +1,6 @@
 import {PipeTransform, Pipe} from '@angular/core';
 import * as _ from 'underscore';
-import {extractDeepPropertyByMapKey} from "../../shared/helpers/helpers";
+import {extractDeepPropertyByMapKey} from "../../helpers/helpers";
 
 @Pipe({name: 'filterBy'})
 export class FilterByPipe implements PipeTransform {

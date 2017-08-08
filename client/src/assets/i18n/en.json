@@ -1,22 +1,38 @@
 {
   "_TODO": "faire le ménage",
+  "collection":{
+    "OrgUnit": {
+      "name": "Organisation Unit",
+      "plural": "Organisation Units",
+      "property": {
+        "name": {
+          "label": "Name",
+          "placeholder": "Enter the name here"
+        },
+        "shortName": {
+          "label": "Short name",
+          "placeholder": "Enter the short name here"
+        },
+        "code": {
+          "label": "Code",
+          "placeholder": "Enter the code"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Enter description"
+        }
+      }
+    }
+  },
   "label": {
     "email": "Email address",
     "password": "Password",
     "username": "User name",
-    "name": "Name",
-    "shortName": "Short name",
-    "code": "Code",
-    "type": "Type",
-    "description": "Description",
     "password": "Password",
     "confirmPassword" : "Confirm password",
     "title" : "Title",
     "author_name": "Author",
     "pages": "Pages"
-  },
-  "placeholder":{
-    "name": "enter the name here"
   },
   "button" : {
     "login" : "Login",

@@ -1,13 +1,16 @@
-import {Component, ViewChild} from '@angular/core';
-import {NavController, NavParams, Content, IonicPage, AlertController} from 'ionic-angular';
+import {Component} from '@angular/core';
+import {NavController, NavParams, IonicPage, AlertController} from 'ionic-angular';
 
 import {FormGroup} from "@angular/forms";
-// import { DynamicFormControlModel, DynamicInputModel } from "@ng2-dynamic-forms/core";
 import {TranslateService} from "@ngx-translate/core";
 import {LoopBackConfig} from "../../../shared/sdk/lb.config";
 import {BASE_URL, API_VERSION} from "../../../shared/base.url";
 import {OrgUnitApi} from "../../../shared/sdk/services/custom/OrgUnit";
 import {OrgUnit} from "../../../shared/sdk/models/OrgUnit";
+import {DynamicFormControlModel} from "@ng2-dynamic-forms/core";
+import {FormProvider} from "../../../providers/form-provider/form-provider";
+import {FORMS} from "../../../shared/forms/index";
+
 //TODO code du node ROOT en parametre de l'application
 
 @IonicPage()
@@ -16,33 +19,36 @@ import {OrgUnit} from "../../../shared/sdk/models/OrgUnit";
   templateUrl: 'orgunit.html',
 })
 export class OrgUnitPage {
-  // @ViewChild(Content) content: Content;
+  // @ViewChild(Content) content: Content; //TODO comprendre à quoi ça sert
   public edit: boolean = false;
-  public modelDefinition = OrgUnit.getModelDefinition();
-  public orgUnit: OrgUnit = <OrgUnit>{};
-  // formModel: DynamicFormControlModel[] = ORGUNIT_FORM_MODEL;
+  public document: OrgUnit = <OrgUnit>{};
+  public modelDefinition: any = FORMS.OrgUnit; //TODO rendre générique
+
+  formModel: DynamicFormControlModel[];
   formGroup: FormGroup;
   isLoading = true; // CHANGED not used anymore, but might be useful for the toaster
 
   constructor(public navCtrl: NavController,
               public navParams: NavParams,
               private alertCtrl: AlertController,
+              private formService: FormProvider,
               private translate: TranslateService,
-              private orgUnitApi: OrgUnitApi) {
+              private orgUnitApi: OrgUnitApi //TODO rendre générique
+  ) {
     LoopBackConfig.setBaseURL(BASE_URL);
     LoopBackConfig.setApiVersion(API_VERSION);
 
-    this.getData(this.navParams.get('orgUnit'), this.navParams.get('new'));
+    this.getData(this.navParams.get('document'), this.navParams.get('new'));
     // TODO check how to update new information after a pop()
   }
 
-  getData(oU, create?: boolean) {
+  getData(documentData, newDocument?: boolean) {
     var req = {};
-    if (oU) {
-      this.orgUnit = oU;
-      req = {where: {id: oU.id}};
-    } else req = {where: {code: 'ROOT'}};
-    this.orgUnitApi.findOne({
+    if (documentData) {
+      this.document = documentData;
+      req = {where: {id: documentData.id}}; //TODO in form model
+    } else req = {where: {code: 'ROOT'}}; //TODO in form omdel
+    this.orgUnitApi.findOne({ //TODO in form model
       ...req,
       ...{
         include: [
@@ -56,14 +62,14 @@ export class OrgUnitPage {
         ]
       }
     }).subscribe((res: OrgUnit) => {
-      if (create){
-        this.orgUnit = new OrgUnit();
-        this.orgUnit.parent = res;
-        this.orgUnit.ancestors = res.ancestors;
-        this.orgUnit.ancestors.unshift(res);
+      if (newDocument){ // TODO rendre générique
+        this.document = new OrgUnit();
+        this.document.parent = res;
+        this.document.ancestors = res.ancestors;
+        this.document.ancestors.unshift(res);
         this.initForm();
       } else {
-        this.orgUnit = res;
+        this.document = res;
       }
     });
   }
@@ -77,13 +83,17 @@ export class OrgUnitPage {
 
   private initForm() {
     this.edit = true;
-    // this.formGroup = this.formService.createForm(this.formModel, this.orgUnit);
+    // TODO no need to reload the form several times? Probably not as we need to get the values from the object to the form input
+    // TODO chargement asynchrone? Dans ce cas, fusionner les deus méthodes ci-dessous en une seule
+    this.formModel = this.formService.createFormModel(this.modelDefinition, this.document);
+    this.formGroup = this.formService.createFormGroup(this.formModel);
   }
 
   actionAddChild() {
-    this.navCtrl.push(OrgUnitPage, {orgUnit: this.orgUnit, new: true});
+    this.navCtrl.push(OrgUnitPage, {document: this.document, new: true});
   }
 
+  //TODO reflechir a comment DRY-ifier cette partie pour une autre collection...
   actionDeleteChild(child) { // TODO not only removes from the list of children, but also deletes the document
     // TODO make it compliant with Material Design (position of the buttons)
     let alert = this.alertCtrl.create({
@@ -105,15 +115,14 @@ export class OrgUnitPage {
       ]
     });
     alert.present();
-
   }
 
   actionMoveChild(child) {
     //  TODO choix via le modal de Yann Github, uniquement possible pour les types d'organisation le permettant (un projet ne peut être déplacé que dans une mission)
   }
 
-  actionPushOrgUnit(orgUnit) {
-    this.navCtrl.push(OrgUnitPage, {orgUnit: orgUnit});
+  actionPush(document) {
+    this.navCtrl.push(OrgUnitPage, {document: document});//TODO rendre générique (classe OrgUnitPage)
   }
 
   actionEdit() {
@@ -122,7 +131,9 @@ export class OrgUnitPage {
   }
 
   actionCancel() {
-    if (!this.orgUnit.id) { // We are in a new and unsaved page so we leave it
+    //TODO prompt if modifications exists -> "discard changes"?
+    //TODO prompt for every pop, also the one on clicking on the nav bar
+    if (!this.document.id) { // We are in a new and unsaved page so we leave it
       this.navCtrl.pop();
     } else { // else we stay in the same OU page, but we come back to the read mode
       this.edit = false;
@@ -130,12 +141,10 @@ export class OrgUnitPage {
   }
 
   actionSave() { //TODO secure in catching errors (client+server)
-    // this.orgUnit = this.formService.saveForm('orgunit', this.orgUnit, this.formModel);
-    //TODO
+    //TODO make generic, not only for OrgUnit
+    //TODO mode asynchrone: subscribe( res => this.orgUnit = res)
+    this.formService.saveForm(this.document, this.formModel);
     this.edit = false;
   }
 
-  // isNew() {
-  //   return (this.edit && !this.orgUnit.id);
-  // }
 }

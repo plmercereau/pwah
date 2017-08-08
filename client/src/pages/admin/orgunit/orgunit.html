@@ -1,3 +1,4 @@
+<!--TODO comprendre comment faire des templates réutilisables-->
 <ion-header>
   <ion-navbar>
     <ion-buttons start>
@@ -6,32 +7,30 @@
       </button>
     </ion-buttons>
     <ion-title>
-      <ng-container *ngFor="let node of orgUnit.ancestors | reverse">
-        {{node.name}} &rarr;
-      </ng-container>
-      {{ !orgUnit.id ? ('page.admin.newOrgUnit' | translate) : orgUnit.name}}
+      <ng-container *ngFor="let node of document.ancestors | reverse">{{node.name}} &rarr;</ng-container>
+      <!--TODO mettre la traduction page.admin.newOrgUnit dans le bon endroit dans le fichier des traductions-->
+      {{ !document.id ? ('page.admin.newOrgUnit' | translate) : document.name}}
     </ion-title>
   </ion-navbar>
-
 </ion-header>
+
 <ion-content>
-  <ion-card *ngIf="orgUnit.code != 'ROOT'">
-    <ion-card-header>
-      {{ 'page.admin.orgUnitDetails' | translate }}...
-    </ion-card-header>
-        <ion-grid *ngIf="!edit">
-            <ion-row *ngFor="let value of (modelDefinition.properties | toArray | filterBy: ['type']: 'string')">
-              <ion-col col-2 h2><h2>{{("label."+value.name) | translate}}</h2></ion-col>
-              <ion-col><h2>{{orgUnit[value.name]}}</h2></ion-col>
-            </ion-row>
-        </ion-grid>
-          <!--TODO 2 columns within the form template? ion-col col-12 col-sm-6 -->
-          <form *ngIf="edit" [formGroup]="formGroup">
-            <dynamic-form-ionic-control *ngFor="let controlModel of formModel"
-                                        [group]="formGroup"
-                                        [model]="controlModel"></dynamic-form-ionic-control>
-          </form>
-          <!-- TODO Coder le type. Utiliser un badge ou un chip?-->
+  <ion-card *ngIf="document.code != 'ROOT'">
+    <ion-card-header>{{ 'page.admin.orgUnitDetails' | translate }}</ion-card-header>
+    <ion-grid *ngIf="!edit">
+      <ion-row *ngFor="let value of modelDefinition.forms.default.fields">
+        <ion-col col-2 h2>{{("collection.OrgUnit.property."+value+".label") | translate}}</ion-col>
+        <!-- TODO mettre le nom de la classe en param? TODO 2: gerer le string avec un $? (cf pipe scan)-->
+        <ion-col>{{document[value]}}</ion-col>
+      </ion-row>
+    </ion-grid>
+    <!--TODO 2 columns within the form-provider template? ion-col col-12 col-sm-6 -->
+    <form *ngIf="edit" [formGroup]="formGroup">
+      <dynamic-form-ionic-control *ngFor="let controlModel of formModel"
+                                  [group]="formGroup"
+                                  [model]="controlModel"></dynamic-form-ionic-control>
+    </form>
+    <!-- TODO Coder le type. Utiliser un badge ou un chip?-->
     <!-- TODO choix des coordonnées GPS (données de site de l'org unit)
     Utiliser un modal?
     -->
@@ -39,20 +38,13 @@
     Notion de shapefile, de zone, de frontière
     -> comment lier cela avec le concept location? -->
     <!-- TODO save/edit/cancel dans la barre de menu? cf recommendations Material & Ionic-->
-    <button ion-button clear *ngIf="!edit" (click)="actionEdit()">
-      {{ 'button.edit' | translate }}
-    </button>
-    <button ion-button clear *ngIf="edit" (click)="actionSave()">
-      {{ 'button.save' | translate }}
-    </button>
-    <button ion-button clear *ngIf="edit" (click)="actionCancel()">
-      {{ 'button.cancel' | translate }}
-    </button>
+    <button ion-button clear *ngIf="!edit" (click)="actionEdit()">{{ 'button.edit' | translate }}</button>
+    <button ion-button clear *ngIf="edit" (click)="actionSave()">{{ 'button.save' | translate }}</button>
+    <button ion-button clear *ngIf="edit" (click)="actionCancel()">{{ 'button.cancel' | translate }}</button>
   </ion-card>
 
-  <ion-card *ngIf="!orgUnit.id || orgUnit.children">
-    <ion-card-header>
-      {{ (orgUnit ? 'page.admin.childOrgUnitsList': 'page.admin.rootOrgUnitsList') | translate }}
+  <ion-card *ngIf="!document.id || document.children">
+    <ion-card-header>{{ (document ? 'page.admin.childOrgUnitsList': 'page.admin.rootOrgUnitsList') | translate }}
     </ion-card-header>
     <ion-list inset>
       <!-- <ion-item *ngIf="children.length==0" text-wrap>
@@ -60,40 +52,24 @@
         TODO: afficher un recap de la marche à suivre s'il n'y a pas encore d'unités enfant (cf Material Design guidelines)
       </ion-item> -->
       <!-- TODO async pipe -->
-      <ion-item *ngFor="let child of orgUnit.children">
-        <ion-label (click)="actionPushOrgUnit(child)">
-          {{child.name}}
-        </ion-label>
-        <button item-end ion-button outline (click)="actionMoveChild(child)">
-          {{ 'button.move' | translate }}
-        </button>
-        <button item-end ion-button outline (click)="actionDeleteChild(child)">
-          <!-- TODO via une alerte de confirmation -->
-          {{ 'button.delete' | translate }}
+      <ion-item *ngFor="let child of document.children">
+        <ion-label (click)="actionPush(child)">{{child.name}}</ion-label>
+        <button item-end ion-button outline (click)="actionMoveChild(child)">{{ 'button.move' | translate }}</button>
+        <button item-end ion-button outline (click)="actionDeleteChild(child)">{{ 'button.delete' | translate }}
         </button>
       </ion-item>
     </ion-list>
-    <button ion-button clear (click)="actionAddChild()" *ngIf="orgUnit.id">
-      {{ 'button.add' | translate }}
-    </button>
+    <button ion-button clear (click)="actionAddChild()" *ngIf="document.id">{{ 'button.add' | translate }}</button>
   </ion-card>
 
-  <ion-card *ngIf="orgUnit">
-    <ion-card-header>
-      Programs
-    </ion-card-header>
+  <ion-card *ngIf="document">
+    <ion-card-header>Programs</ion-card-header>
     <ion-list inset>
-      <ion-item text-wrap>
-        No running program in this organisation unit.
-        TODO: afficher un recap de la marche à suivre s'il n'y a pas encore de programmes (cf Material Design guidelines)
-      </ion-item>
+      <!--TODO: afficher un recap de la marche à suivre s'il n'y a pas encore de programmes (cf Material Design guidelines)-->
+      <ion-item text-wrap>No running program in this organisation unit.</ion-item>
     </ion-list>
-    <button ion-button clear *ngIf="!orgUnit.id">
-      <!-- QUESTION via un modal?
-      Si modal: liste déroulante des programmes permis, puis création, puis
-      push de la page programme de l'org unit -->
-      {{ 'button.add' | translate }}
-    </button>
+    <!-- TODO via un modal? Si modal: liste déroulante des programmes permis, puis création, puis push de la page programme de l'org unit -->
+    <button ion-button clear *ngIf="!document.id">{{ 'button.add' | translate }}</button>
   </ion-card>
 
 

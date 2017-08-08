@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {extractDeepPropertyByMapKey} from "../../shared/helpers/helpers";
+import {extractDeepPropertyByMapKey} from "../../helpers/helpers";
 // import { extractDeepPropertyByMapKey } from "../../helpers/helpers"
 @Pipe({
   name: 'pluck',
