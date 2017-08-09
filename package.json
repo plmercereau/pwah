@@ -20,6 +20,7 @@
     "loopback-component-access-groups": "^1.2.0",
     "loopback-component-explorer": "^4.0.0",
     "loopback-connector-mongodb": "^1.18.1",
+    "loopback-connector-rest": "^2.1.0",
     "loopback-context": "^3.3.0",
     "loopback-ds-calculated-mixin": "^2.0.4",
     "serve-favicon": "^2.0.1",

@@ -15,7 +15,7 @@ module.exports = function(app) {
   OrgUnit.create({
     name: 'Root',
     shortName: 'Root',
-    code: 'ROOT',
+    code: 'root',
     description: 'Root node, system document, Do not remove!'})
     .then(function(root) {
       // TODO remove the insertions below

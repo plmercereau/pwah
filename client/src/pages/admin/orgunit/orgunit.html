@@ -9,7 +9,7 @@
     <ion-title>
       <ng-container *ngFor="let node of document.ancestors | reverse">{{node.name}} &rarr;</ng-container>
       <!--TODO mettre la traduction page.admin.newOrgUnit dans le bon endroit dans le fichier des traductions-->
-      {{ !document.id ? ('page.admin.newOrgUnit' | translate) : document.name}}
+      {{ !document.id ? ((document.parent? document.parent.name : '') + " &rarr; " + ('page.admin.newOrgUnit' | translate)) : document.name}}
     </ion-title>
   </ion-navbar>
 </ion-header>
@@ -18,7 +18,7 @@
   <ion-card *ngIf="document.code != 'ROOT'">
     <ion-card-header>{{ 'page.admin.orgUnitDetails' | translate }}</ion-card-header>
     <ion-grid *ngIf="!edit">
-      <ion-row *ngFor="let value of modelDefinition.forms.default.fields">
+      <ion-row *ngFor="let value of modelDefinition.forms.default.input_fields">
         <ion-col col-2 h2>{{("collection.OrgUnit.property."+value+".label") | translate}}</ion-col>
         <!-- TODO mettre le nom de la classe en param? TODO 2: gerer le string avec un $? (cf pipe scan)-->
         <ion-col>{{document[value]}}</ion-col>
@@ -43,7 +43,7 @@
     <button ion-button clear *ngIf="edit" (click)="actionCancel()">{{ 'button.cancel' | translate }}</button>
   </ion-card>
 
-  <ion-card *ngIf="!document.id || document.children">
+  <ion-card *ngIf="document.children">
     <ion-card-header>{{ (document ? 'page.admin.childOrgUnitsList': 'page.admin.rootOrgUnitsList') | translate }}
     </ion-card-header>
     <ion-list inset>

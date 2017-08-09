@@ -24,6 +24,7 @@
     "@ionic-native/splash-screen": "3.12.1",
     "@ionic-native/status-bar": "3.12.1",
     "@ionic/storage": "2.0.1",
+    "@mean-expert/fireloop": "^1.0.0-beta.2.6",
     "@ng2-dynamic-forms/core": "^1.4.20",
     "@ng2-dynamic-forms/ui-ionic": "^1.4.20",
     "@ngx-translate/core": "^7.1.0",

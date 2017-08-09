@@ -4,7 +4,8 @@ import 'rxjs/add/operator/map';
 import { DynamicFormService, DynamicInputModel, DynamicFormControlModel } from "@ng2-dynamic-forms/core";
 import { TranslateService } from "@ngx-translate/core";
 import * as _ from 'underscore';
-import { OrgUnit } from "../../shared/sdk/models/OrgUnit";
+import {OrgUnitApi} from "../../shared/sdk/services/custom/OrgUnit";
+import {FORMS} from "../../shared/models/index";
 
 /*
   Generated class for the FormProvider provider.
@@ -16,18 +17,18 @@ import { OrgUnit } from "../../shared/sdk/models/OrgUnit";
 export class FormProvider {
   constructor(public http: Http,
               private formService: DynamicFormService,
-              private translate: TranslateService) {
+              private translate: TranslateService,
+              private orgUnitApi: OrgUnitApi) { //TODO rendre générique
   }
 
-  createFormModel(modelDefinition, object?, formType?, filter?) {
+  createFormModel(object?, formType?, filter?) {
     //TODO transformer en observable/promise pour pouvoir par exemple chager les informations en asynchrone, par exemple les traductions?
     //TODO dans ce cas: createFormModel.subscribe(result => this.formModel = result)
-    //TODO extend to complex forms with nested objects
-    let modelName = 'OrgUnit'; //TODO make it automatic
-    let fDefinition = modelDefinition['forms'][formType ? formType : 'default'];
-    let fields = fDefinition ? fDefinition['fields'] : Object.keys(modelDefinition['properties']);
+    //TODO extend to complex models with nested objects
+    let modelName = 'OrgUnit'; //TODO make it DRY
+    let modelDefinition = FORMS[modelName];
     let formModel: DynamicFormControlModel[] = [];
-    for (let property of fields) {
+    for (let property of this.getFormProperties('input_fields', formType)) {
       switch (_.unescape(modelDefinition['properties'][property]['type'])) {
         case 'string':
           //TODO refine the type of input!!!
@@ -61,17 +62,42 @@ export class FormProvider {
     return this.formService.createFormGroup(formModel);
   }
 
-  saveForm(object, formModel) {
+  private getFormProperties(propertyType, formType?){
+    let modelName = 'OrgUnit'; //TODO make it DRY
+    let modelDefinition = FORMS[modelName];
+    let fDefinition = modelDefinition['forms'][formType ? formType : 'default'];
+    return fDefinition ? fDefinition[propertyType] : Object.keys(modelDefinition['properties']);
+  }
+
+  private getComputedValues(document, formType?){
+    // TODO only working for computed_relations_ref now. make it work with computed_field and computed_relations_nested
+    let modelName = 'OrgUnit'; //TODO make it DRY
+    let modelDefinition = FORMS[modelName];
+    let properties =this.getFormProperties('computed_relations_ref');
+    let result = {};
+    properties.forEach(property => {
+      if (_.unescape(modelDefinition['relations'][property]['type']).endsWith("[]")){
+        //TODO one to many ref
+      } else {
+        result[property+'Id'] = document[property]? document[property].id : document[property+'Id'];
+      }
+    });
+    return result;
+  }
+
+  saveForm(document, formModel, formType?) {
     //TODO mode asynchrone, retourner une promise
     //TODO does 'value' property exists for every kind of form input?
     //TODO https://stackoverflow.com/questions/15338610/dynamically-loading-a-typescript-class-reflection-for-typescript
-    let data = Object.assign({}, ...formModel.map(a => ({[a.name]: a['value']})));
-    if (!object._id) { // new document
-      //TODO
-    } else { // update existing document
-      // object.save();
+    let data = Object.assign({}, ...formModel.map(a => ({[a.name]: a['value']}))); // constructs an object with the value of every form input
+    Object.assign(data, this.getComputedValues(document,formType));
+    if (document.id){ // Adds id to the form data, and possible data to update that is not in the form
+      Object.assign(data, {id:document.id});
     }
-    return object;
+    data = _.pick(data, _.identity); // remove null or undefined values
+    return this.orgUnitApi.upsertPatch(data); // Sends only the form data and the existing id to the server
+    //TODO reload children, ancestors...
+    //TODO handle a callback
   }
 
 }

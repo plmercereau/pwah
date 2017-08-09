@@ -2,11 +2,16 @@
   "name": "OrgUnit",
   "plural": "OrgUnits",
   "base": "PersistedModel",
+  "forceId": true,
   "options": {
     "validateUpsert": true
   },
   "mixins": {
-    "Tree": {}
+    "Tree": {},
+    "UpperCase": {
+      "firstLetter": ["name","shortName"],
+      "all": ["code"]
+    }
   },
   "properties": {
     "name": {

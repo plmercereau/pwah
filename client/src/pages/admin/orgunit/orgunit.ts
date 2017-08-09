@@ -9,9 +9,7 @@ import {OrgUnitApi} from "../../../shared/sdk/services/custom/OrgUnit";
 import {OrgUnit} from "../../../shared/sdk/models/OrgUnit";
 import {DynamicFormControlModel} from "@ng2-dynamic-forms/core";
 import {FormProvider} from "../../../providers/form-provider/form-provider";
-import {FORMS} from "../../../shared/forms/index";
-
-//TODO code du node ROOT en parametre de l'application
+import {FORMS} from "../../../shared/models/index";
 
 @IonicPage()
 @Component({
@@ -38,35 +36,28 @@ export class OrgUnitPage {
     LoopBackConfig.setBaseURL(BASE_URL);
     LoopBackConfig.setApiVersion(API_VERSION);
 
-    this.getData(this.navParams.get('document'), this.navParams.get('new'));
+    this.loadData(this.navParams.get('document'), this.navParams.get('new'));
     // TODO check how to update new information after a pop()
   }
 
-  getData(documentData, newDocument?: boolean) {
+  loadData(documentData, newDocument?: boolean) {
     var req = {};
     if (documentData) {
       this.document = documentData;
-      req = {where: {id: documentData.id}}; //TODO in form model
-    } else req = {where: {code: 'ROOT'}}; //TODO in form omdel
-    this.orgUnitApi.findOne({ //TODO in form model
+      req = {where: {id: documentData.id}};
+    } else req = {where: this.modelDefinition.findOneDefault};
+    this.orgUnitApi.findOne({
       ...req,
-      ...{
-        include: [
-          {
-            relation: 'children',
-            scope: {order: 'name ASC'}
-          },{
-            relation: 'ancestors',
-            fields: 'name', // TODO check if we only get the name :)
-          }
-        ]
-      }
+      ...{include: this.modelDefinition.include}
     }).subscribe((res: OrgUnit) => {
-      if (newDocument){ // TODO rendre générique
+      if (newDocument){
         this.document = new OrgUnit();
-        this.document.parent = res;
-        this.document.ancestors = res.ancestors;
-        this.document.ancestors.unshift(res);
+        // TODO rendre générique -> mais c'est un mécanisme valable seulement pour les arbres
+        if (this.modelDefinition.dataStructure.includes("tree")){
+          console.log('Tree!');
+          this.document.parent = res;
+          this.document.ancestors = res.ancestors;
+        }
         this.initForm();
       } else {
         this.document = res;
@@ -85,7 +76,7 @@ export class OrgUnitPage {
     this.edit = true;
     // TODO no need to reload the form several times? Probably not as we need to get the values from the object to the form input
     // TODO chargement asynchrone? Dans ce cas, fusionner les deus méthodes ci-dessous en une seule
-    this.formModel = this.formService.createFormModel(this.modelDefinition, this.document);
+    this.formModel = this.formService.createFormModel(this.document);
     this.formGroup = this.formService.createFormGroup(this.formModel);
   }
 
@@ -143,7 +134,18 @@ export class OrgUnitPage {
   actionSave() { //TODO secure in catching errors (client+server)
     //TODO make generic, not only for OrgUnit
     //TODO mode asynchrone: subscribe( res => this.orgUnit = res)
-    this.formService.saveForm(this.document, this.formModel);
+    this.formService.saveForm(this.document, this.formModel).subscribe((res:any) => { //TODO rendre générique: any -> T
+      Object.assign(this.document,res);
+      if (this.modelDefinition.dataStructure === 'tree'){
+        this.modelDefinition.include.forEach(property => { //TODO c'est un peu moche, et ça ne résoud pas les ancestors
+            if (property.relation
+              && !this.document[property.relation]
+              && this.modelDefinition.relations[property.relation].type.endsWith("[]")
+            ) this.document[property.relation] = [];
+        });
+      }
+      //TODO gérer les erreurs de serveur et le mode asynchrone en général: afficher les changements si la valiadtion passe, mais afficher un mode "hors connection" si pas encore eu la confirmation du serveur
+    });
     this.edit = false;
   }
 
